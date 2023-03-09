@@ -137,23 +137,33 @@ dword_result_t ObReferenceObjectByName_entry(lpstring_t name,
 }
 DECLARE_XBOXKRNL_EXPORT1(ObReferenceObjectByName, kNone, kImplemented);
 
-void ObDereferenceObject_entry(dword_t native_ptr, const ppc_context_t& ctx) {
-  // Check if a dummy value from ObReferenceObjectByHandle.
-  if (native_ptr == 0xDEADF00D) {
-    return;
-  }
+// This is really dirty! As mentioned in xam_user.cc, we're passing session handles
+// around as if they're pointers. Because of this, the title will try to dereference a handle.
+// As a crude temporary solution I've disabled xobject dereferencing entirely!
+// This is bad! It might cause a memory leak! This should be corrected ASAP!
 
-  auto object = XObject::GetNativeObject<XObject>(
-      kernel_state(), kernel_memory()->TranslateVirtual(native_ptr));
-  if (object) {
-    object->ReleaseHandle();
-
-  } else {
-    if (native_ptr) {
-      XELOGW("Unregistered guest object provided to ObDereferenceObject {:08X}",
-             native_ptr.value());
-    }
-  }
+//void ObDereferenceObject_entry(dword_t native_ptr, const ppc_context_t& ctx) {
+//  // Check if a dummy value from ObReferenceObjectByHandle.
+//  //if (native_ptr == 0xDEADF00D) {
+//  //  return;
+//  //}
+//
+//  auto object = XObject::GetNativeObject<XObject>(
+//      kernel_state(), kernel_memory()->TranslateVirtual(native_ptr));
+//  if (object) {
+//    object->ReleaseHandle();
+//
+//  } else {
+//    if (native_ptr) {
+//      XELOGW("Unregistered guest object provided to ObDereferenceObject {:08X}",
+//             native_ptr.value());
+//    }
+//  }
+//  return;
+//}
+void ObDereferenceObject_entry(dword_t native_ptr,
+                               dword_t ptr2 /* const ppc_context_t ctx*/) {
+  XELOGI("ObDereferenceObject");
   return;
 }
 DECLARE_XBOXKRNL_EXPORT1(ObDereferenceObject, kNone, kImplemented);
